@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jumbled Word Game</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #44ed19;
+        padding: 50px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      input {
+        padding: 10px;
+        font-size: 16px;
+      }
+      #score {
+        font-size: 20px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Jumbled Word Game</h1>
+    <p id="message">Welcome! Click "Start Game" to begin.</p>
+    <button id="startButton">Start Game</button>
+    <div id="game" style="display: none">
+      <h3>Category: <span id="category"></span></h3>
+      <p>Jumbled word: <span id="jumbled_word"></span></p>
+      <input type="text" id="guess" placeholder="Enter your guess" />
+      <button id="submitGuess">Submit Guess</button>
+      <p id="score">Score: 0</p>
+    </div>
+
+    <script>
+      let score = 0;
+
+      document.getElementById("startButton").addEventListener("click", () => {
+        fetch("/start_game")
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("category").innerText = data.category;
+            document.getElementById("jumbled_word").innerText =
+              data.jumbled_word;
+            document.getElementById("game").style.display = "block";
+            document.getElementById("startButton").style.display = "none";
+          });
+      });
+
+      document.getElementById("submitGuess").addEventListener("click", () => {
+        const guess = document.getElementById("guess").value;
+        fetch("/check_guess", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: `guess=${guess}`,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.correct) {
+              score++;
+              document.getElementById("score").innerText = `Score: ${score}`;
+              document.getElementById("message").innerText = data.message;
+              document.getElementById("guess").value = "";
+            } else {
+              document.getElementById("message").innerText = data.message;
+            }
+          });
+      });
+    </script>
+  </body>
+</html>
